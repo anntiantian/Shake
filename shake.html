@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+ 	    <title>DeviceMotionEvent</title>
+	    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+            <link rel="stylesheet" href="style.css" type="text/css">
+            <link rel="stylesheet" href="shake.css" type="text/css">
+	</head>
+        <body>
+            <div>
+                <audio id="musicBox" preload="metadata" controls src="weixin_yaoyiyao.mp3"></audio>
+                <p>x轴：<span id="xg">0</span>   y轴：<span id="yg">0</span>   z轴：<span id="zg">0</span></p>
+                <p>上次收到通知的间隔：<span id="interval">0</span>毫秒</p>
+                <p>次数：<span id="times">0</span>次</p>
+                <div class="Preview-container">
+                    <h2 class="toptit">效果预览区</h2>
+                    <div id="demo" ></div>
+                </div>
+                <!--弹层-->
+                <div class="pop-box" id="pop" style="display:none">
+                    <div class="pop">
+                        <h1>提示</h1>
+                        <h5>点击重置</h5>
+                        <div class="cg1">
+                            <a href="javascript:;" id="reset">重置</a>
+                            <!--<a href="">去广州</a>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <script type="text/javascript">
+            window.onload = function(){
+                var oShake = document.getElementById("demo");
+                var f = 1, times = 0, audioLoaded = 0; 
+                var pop = document.getElementById("pop");
+                var last_update=new Date().getTime();
+                var media= document.getElementById("musicBox");
+//                media.src="weixin_yaoyiyao.mp3";
+                media.addEventListener("loadeddata", function(){
+                    audioLoaded = 1;
+//                    document.getElementById("text").innerHTML = "您可以摇一摇了";
+//
+//                    document.getElementById("text").addEventListener("click", function(){
+//                        media.play();
+//                    });
+//                    document.getElementById("text").click();
+                });		
+                if(window.DeviceMotionEvent) { 
+                    var speed = 10;//定义一个数值 
+                    var x = y = z = lastX = lastY = lastZ = 0;//重置所有数值 
+                window.addEventListener('devicemotion', deviceMotionHandler, false);
+                
+                document.getElementById("reset").addEventListener("click", function(){
+                    f = 1;
+                    pop.style.display = "none";
+                    oShake.className = "";
+                });
+                
+                // test on PC
+                oShake.addEventListener("click", function(){
+                    this.className = "shake";
+                    setTimeout(function(){
+                        oShake.className = "";
+                    }, 1000);
+                });
+                
+                function deviceMotionHandler(event){
+                    var accGravity = event.accelerationIncludingGravity;
+                    document.getElementById("xg").innerHTML = Math.round(accGravity.x);
+                    document.getElementById("yg").innerHTML = Math.round(accGravity.y);
+                    document.getElementById("zg").innerHTML = Math.round(accGravity.z);
+                        
+                    x = accGravity.x; 
+                    y = accGravity.y; 
+                    z = accGravity.z; 
+                    if(Math.abs(x-lastX) > speed && Math.abs(y-lastY) > speed ) { 
+                        var curTime = new Date().getTime(); 
+                        var diff = curTime - last_update ; 
+                        document.getElementById("interval").innerHTML = diff;
+                        if (diff > 100 && f == 1) {  
+                            f = 0;
+                            document.getElementById("reset").disabled = false;
+                            last_update = curTime;        
+                            if( audioLoaded == 1 ){
+                                media.currentTime = 0;
+                                media.play();
+                            }
+                            oShake.className = "shake";
+                            document.getElementById("times").innerHTML = ++times;
+                            setTimeout(function(){pop.style.display = "block";}, 1000);
+                        }
+                    }
+                    lastX = x;
+                    lastY = y;
+                    lastZ = z;
+		}
+            }
+        }
+   	 	</script>
+	</body>
+</html>
